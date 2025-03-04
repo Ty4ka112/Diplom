@@ -20,6 +20,6 @@
 ### Шаги по установке и запуску
 
 1. **Клонируйте репозиторий:**
-   ```bash
-   git clone https://github.com/yourusername/todolist-api.git
-   cd todolist-api
+ 
+   git clone https://github.com/Ty4ka112/Diplom.git
+   
