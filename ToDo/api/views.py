@@ -1,12 +1,14 @@
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from .models import Task, Category, Priority
-from .serializers import TaskSerializer, CategorySerializer, PrioritySerializer, UserSerializer
+from .serializers import TaskSerializer, CategorySerializer, PrioritySerializer, UserSerializer, RegisterSerializer
 from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.permissions import AllowAny
+
 
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
@@ -66,5 +68,11 @@ class UserViewSet(viewsets.ModelViewSet):
         new_password = User.objects.make_random_password()
         user.set_password(new_password)
         user.save()
-        # Здесь вы можете отправить новый пароль пользователю по электронной почте
         return Response({'status': 'password reset', 'new_password': new_password})
+
+class RegisterView(generics.CreateAPIView):
+    serializer_class = RegisterSerializer
+    permission_classes = [AllowAny]
+    queryset = User.objects.all()
+
+
