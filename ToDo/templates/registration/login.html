@@ -1,15 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Определение кодировки документа как UTF-8 -->
     <meta charset="UTF-8">
+    <!-- Настройка viewport для обеспечения адаптивности на разных устройствах -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Заголовок страницы -->
     <title>Login</title>
 </head>
 <body>
+    <!-- Заголовок уровня 1 с текстом "Login" -->
     <h1>Login</h1>
+    <!-- Форма для входа -->
     <form method="post">
+        <!-- Токен CSRF для защиты от атак методом подделки межсайтовых запросов -->
         {% csrf_token %}
+        <!-- Вставка формы, отображаемой в виде абзацев -->
         {{ form.as_p }}
+        <!-- Кнопка для отправки формы -->
         <button type="submit">Login</button>
     </form>
 </body>

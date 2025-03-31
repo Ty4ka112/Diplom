@@ -1,13 +1,35 @@
-from rest_framework import viewsets, filters, generics
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework.authtoken.models import Token
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Task, Category, Priority
-from .serializers import TaskSerializer, CategorySerializer, PrioritySerializer, UserSerializer, RegisterSerializer
-from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
+from django.shortcuts import get_object_or_404, render, redirect
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets, filters, generics
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from .models import Task, Category, Priority
+from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
+from .serializers import TaskSerializer, CategorySerializer, PrioritySerializer, UserSerializer, RegisterSerializer
+from .forms import TaskForm
+
+
+def delete_task_view(request, pk):
+    task = get_object_or_404(Task, pk=pk, created_by=request.user)
+    if request.method == 'POST':
+        task.delete()
+        return redirect('tasks')
+    return render(request, 'delete_task.html', {'task': task})
+
+def edit_task_view(request, pk):
+    task = get_object_or_404(Task, pk=pk, created_by=request.user)
+    if request.method == 'POST':
+        form = TaskForm(request.POST, instance=task)
+        if form.is_valid():
+            form.save()
+            return redirect('tasks')  # Перенаправление на список задач
+    else:
+        form = TaskForm(instance=task)
+    return render(request, 'edit_task.html', {'form': form, 'task': task})
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -25,6 +47,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -75,4 +98,33 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     queryset = User.objects.all()
 
+def register_view(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = UserCreationForm()
+    return render(request, 'register.html', {'form': form})  # Без вложенных директорий
+
+
+def task_list_view(request):
+    tasks = Task.objects.filter(created_by=request.user)
+    return render(request, 'tasks.html', {'tasks': tasks})
+
+
+def create_task_view(request):
+    if request.method == 'POST':
+        form = TaskForm(request.POST)
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.created_by = request.user
+            task.save()
+            return redirect('tasks')
+        else:
+            print(form.errors)
+    else:
+        form = TaskForm()
+    return render(request, 'create_task.html', {'form': form})
 
